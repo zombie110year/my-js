@@ -1,5 +1,5 @@
 // ==UserScript==
-// @name         github-enhance
+// @name         GitHub RepoSize
 // @namespace    http://js.zombie110year.top/
 // @version      0.1.0
 // @description  show repo's size
