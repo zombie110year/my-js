@@ -14,9 +14,10 @@
     const SESSION_STORAGE_KEY = "api_fetched";
     parseURL()
         .then(obj => {
-            return `https://api.github.com/repos/${obj.owner}/${obj.repo}`
+            return `https://api.github.com/repos/${obj.owner}/${obj.repo}`;
         })
         .then(async (url) => {
+            // cache repo info
             if (sessionStorage.getItem(SESSION_STORAGE_KEY) === null) {
                 let data = await fetch(url).then(resp => resp.json());
                 sessionStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(data));
@@ -24,11 +25,21 @@
         })
         .then(main);
 
+    /**
+     * main processing, **assume api info has been cached in sessionStorage**.
+     *
+     * 1. reposize
+     */
     async function main() {
         let status = JSON.parse(sessionStorage.getItem(SESSION_STORAGE_KEY));
         showRepoSize(status["size"]);
     }
 
+    /**
+     * add repo's size infomation into summary list
+     *
+     * @param {number} size kilobytes
+     */
     async function showRepoSize(size) {
         let ul = document.querySelector(".numbers-summary");
         let li = document.createElement("li");
@@ -36,6 +47,10 @@
         ul.appendChild(li);
 
     }
+
+    /**
+     * get repo's owner and name to fetch GitHub's api
+     */
     async function parseURL() {
         let pattern = RegExp("/([^/]+)/([^/]+)/?");
         let paths = pattern.exec(location.pathname);
