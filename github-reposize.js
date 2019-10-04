@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         GitHub RepoSize
 // @namespace    http://js.zombie110year.top/
-// @version      0.1.0
+// @version      0.2.0
 // @description  show repo's size
 // @author       zombie110year@outlook.com
 // @match        https://github.com/*/*
@@ -41,11 +41,22 @@
      * @param {number} size kilobytes
      */
     async function showRepoSize(size) {
+        let unit = "KB";
+        let display_size = -1;
+        if (size < 1024) {
+            display_size = size;
+            unit = "KB";
+        } else if (size < 1048576) {
+            display_size = (size / 1024).toFixed(3);
+            unit = "MB";
+        } else {
+            display_size = (size / 1048576).toFixed(3);
+            unit = "GB";
+        }
         let ul = document.querySelector(".numbers-summary");
         let li = document.createElement("li");
-        li.innerHTML = `<a href="${location.pathname}">${ICON_DATABASE} <span class="num text-emphasized">${size}</span> kilobytes</a>`;
+        li.innerHTML = `<a href="${location.pathname}">${ICON_DATABASE} <span class="num text-emphasized">${display_size}</span> ${unit}</a>`;
         ul.appendChild(li);
-
     }
 
     /**
