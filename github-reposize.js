@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         GitHub RepoSize
 // @namespace    http://js.zombie110year.top/
-// @version      0.2.0
+// @version      0.2.1
 // @description  show repo's size
 // @author       zombie110year@outlook.com
 // @match        https://github.com/*/*
@@ -12,27 +12,37 @@
 (() => {
     const ICON_DATABASE = `<svg t="1566195284663" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="1131" width="16" height="16"><path d="M894.030769 177.230769c0-74.830769-171.323077-135.876923-382.030769-135.876923S129.969231 102.4 129.969231 177.230769v47.261539c0 74.830769 171.323077 135.876923 382.030769 135.876923s382.030769-61.046154 382.030769-135.876923V177.230769zM129.969231 334.769231c0 59.076923 171.323077 106.338462 382.030769 106.338461S894.030769 393.846154 894.030769 334.769231v96.492307c0 74.830769-171.323077 135.876923-382.030769 135.876924S129.969231 506.092308 129.969231 431.261538V334.769231z m0 0c0 59.076923 171.323077 106.338462 382.030769 106.338461S894.030769 393.846154 894.030769 334.769231v96.492307c0 74.830769-171.323077 135.876923-382.030769 135.876924S129.969231 506.092308 129.969231 431.261538V334.769231z m0 206.769231c0 59.076923 171.323077 106.338462 382.030769 106.338461s382.030769-47.261538 382.030769-106.338461v96.492307c0 74.830769-171.323077 135.876923-382.030769 135.876923s-382.030769-59.076923-382.030769-133.907692v-98.461538z m0 208.738461c0 59.076923 171.323077 106.338462 382.030769 106.338462s382.030769-47.261538 382.030769-106.338462V846.769231c0 74.830769-171.323077 135.876923-382.030769 135.876923S129.969231 921.6 129.969231 846.769231v-96.492308z" p-id="1132" fill="#515151"></path></svg>`;
     const SESSION_STORAGE_KEY = "api_fetched";
-    parseURL()
-        .then(obj => {
-            return `https://api.github.com/repos/${obj.owner}/${obj.repo}`;
-        })
-        .then(async (url) => {
-            // cache repo info
-            if (sessionStorage.getItem(SESSION_STORAGE_KEY) === null) {
-                let data = await fetch(url).then(resp => resp.json());
-                sessionStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(data));
-            }
-        })
-        .then(main);
+    let SIZE_LI;
+
+    async function GitHubRepoSizeMain() {
+        let data = sessionStorage.getItem(SESSION_STORAGE_KEY);
+        if (data === null || data.size === undefined) {
+            await refreshApiFetched();
+        }
+        await refreshDisplay();
+    }
+
+    async function refreshApiFetched() {
+        parseURL()
+            .then(obj => {
+                console.debug(`GitHubRepoSize: get /repos:/${obj.owner}/${obj.repo}`);
+                return `https://api.github.com/repos/${obj.owner}/${obj.repo}`;
+            })
+            .then(url => fetch(url))
+            .then(resp => resp.json())
+            .then(data => {
+                sessionStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(data))
+            });
+    }
 
     /**
      * main processing, **assume api info has been cached in sessionStorage**.
      *
      * 1. reposize
      */
-    async function main() {
-        let status = JSON.parse(sessionStorage.getItem(SESSION_STORAGE_KEY));
-        showRepoSize(status["size"]);
+    refreshDisplay = async function () {
+        const status = JSON.parse(sessionStorage.getItem(SESSION_STORAGE_KEY));
+        showRepoSize(status.size);
     }
 
     /**
@@ -53,10 +63,7 @@
             display_size = (size / 1048576).toFixed(3);
             unit = "GB";
         }
-        let ul = document.querySelector(".numbers-summary");
-        let li = document.createElement("li");
-        li.innerHTML = `<a href="${location.pathname}">${ICON_DATABASE} <span class="num text-emphasized">${display_size}</span> ${unit}</a>`;
-        ul.appendChild(li);
+        SIZE_LI.innerHTML = `<a href="${location.href}">${ICON_DATABASE}<span class="num text-emphasized">${display_size}</span>${unit}</a>`;
     }
 
     /**
@@ -71,4 +78,12 @@
         }
         return obj;
     }
+
+    // start
+    SIZE_LI = document.createElement("li");
+    SIZE_LI.setAttribute("id", "reposize");
+    let ul = document.querySelector(".numbers-summary");
+    SIZE_LI.innerHTML = `<a href="${location.href}">${ICON_DATABASE}<span class="num text-emphasized">...</span>KB</a>`;
+    ul.appendChild(SIZE_LI);
+    GitHubRepoSizeMain();
 })();
