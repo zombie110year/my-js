@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         GitHub RepoSize
 // @namespace    http://js.zombie110year.top/
-// @version      0.2.1
+// @version      0.2.2
 // @description  show repo's size
 // @author       zombie110year@outlook.com
 // @match        https://github.com/*/*
@@ -40,7 +40,7 @@
      *
      * 1. reposize
      */
-    refreshDisplay = async function () {
+    async function refreshDisplay() {
         const status = JSON.parse(sessionStorage.getItem(SESSION_STORAGE_KEY));
         showRepoSize(status.size);
     }
