@@ -4,8 +4,15 @@
     "outDir": "dist/",
     "target": "es6",
     "charset": "utf-8",
+    "incremental": true,
+    "sourceMap": true,
     "module": "None",
-    "removeComments": false
+    "removeComments": false,
+    "lib": [
+      "DOM",
+      "DOM.Iterable",
+      "ES6"
+    ]
   },
   "include": [
     "./*.ts"
